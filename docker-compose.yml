@@ -1,0 +1,60 @@
+version: "3.9"
+services:
+  profile:
+    container_name: profile
+    build: ./profile-ms/profile
+    ports:
+      - 3000:3000
+    depends_on:
+      - rabbitmq
+      - postgres_profile
+    networks:
+      - profile
+      - rabbit
+  user:
+    container_name: user
+    build: ./user-ms/user
+    ports:
+      - 4000:4000
+    depends_on:
+      - rabbitmq
+      - postgres_user
+    networks:
+      - user
+      - rabbit
+  postgres_profile:
+    hostname: profile_db
+    image: postgres:15.2-alpine
+    environment:
+      PG_DATA: /var/lib/postgresql/data
+      POSTGRES_DB: profile
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5431:5432
+    networks:
+      - profile
+  postgres_user:
+    hostname: user_db
+    image: postgres:15.2-alpine
+    environment:
+      PG_DATA: /var/lib/postgresql/data
+      POSTGRES_DB: user
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5433:5432
+    networks:
+      - user
+  rabbitmq:
+    hostname: rabbitmq
+    image: rabbitmq:3.11.3-management
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - rabbit
+networks:
+  rabbit:
+  user:
+  profile:
