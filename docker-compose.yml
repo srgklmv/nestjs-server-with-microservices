@@ -1,60 +1,69 @@
 version: "3.9"
 services:
-  profile:
-    container_name: profile
-    build: ./profile
-    ports:
-      - 3000:3000
-    depends_on:
-      - rabbitmq
-      - postgres_profile
-    networks:
-      - profile
-      - rabbit
-  user:
-    container_name: user
-    build: ./user
-    ports:
-      - 4000:4000
-    depends_on:
-      - rabbitmq
-      - postgres_user
-    networks:
-      - user
-      - rabbit
   postgres_profile:
+    container_name: profile_db
     hostname: profile_db
-    image: postgres:15.2-alpine
+    image: postgres:latest
     environment:
       PG_DATA: /var/lib/postgresql/data
       POSTGRES_DB: profile
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - 5431:5432
-    networks:
-      - profile
+      - "5431:5432"
   postgres_user:
+    container_name: user_db
     hostname: user_db
-    image: postgres:15.2-alpine
+    image: postgres:latest
     environment:
       PG_DATA: /var/lib/postgresql/data
       POSTGRES_DB: user
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - 5433:5432
-    networks:
-      - user
+      - "5433:5432"
   rabbitmq:
+    container_name: rabbitmq
     hostname: rabbitmq
     image: rabbitmq:3.11.3-management
     ports:
-      - 15672:15672
-      - 5672:5672
-    networks:
-      - rabbit
-networks:
-  rabbit:
-  user:
+      - "15672:15672"
+      - "5672:5672"
   profile:
+    container_name: profile
+    build: ./profile
+    environment:
+      - PORT=3000
+      - POSTGRES_HOST=profile_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=profile
+      - RMQ_URL=amqp://rabbitmq:5672
+      - TO_USER_QUEUE=to_user
+    ports:
+      - "3000:3000"
+    depends_on:
+      - rabbitmq
+      - postgres_profile
+    links:
+      - postgres_profile
+  user:
+    container_name: user
+    build: ./user
+    environment:
+      - PORT=4000
+      - POSTGRES_HOST=user_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=user
+      - RMQ_URL=amqp://rabbitmq:5672
+      - TO_USER_QUEUE=to_user
+    ports:
+      - "4000:4000"
+    depends_on:
+      - rabbitmq
+      - postgres_user
+    links:
+      - postgres_user

@@ -9,9 +9,6 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: `.${process.env.NODE_ENV}.env`,
-    }),
     ClientsModule.register([
       {
         name: 'TO_USER',
@@ -34,6 +31,7 @@ import { JwtModule } from '@nestjs/jwt';
       database: process.env.POSTGRES_DATABASE,
       entities: [Profile],
       synchronize: true,
+      migrationsRun: true
     }),
     TypeOrmModule.forFeature([Profile]),
     JwtModule.register({
