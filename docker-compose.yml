@@ -2,7 +2,7 @@ version: "3.9"
 services:
   profile:
     container_name: profile
-    build: ./profile-ms/profile
+    build: ./profile
     ports:
       - 3000:3000
     depends_on:
@@ -13,7 +13,7 @@ services:
       - rabbit
   user:
     container_name: user
-    build: ./user-ms/user
+    build: ./user
     ports:
       - 4000:4000
     depends_on:
